@@ -1,6 +1,6 @@
 {
     "name": "n8n-nodes-disclarion",
-    "version": "0.1.2",
+    "version": "0.1.3",
     "description": "n8n community node to log AI interactions with Disclarion for EU AI Act Article 50 disclosure compliance",
     "license": "MIT",
     "homepage": "https://disclarion.com",
