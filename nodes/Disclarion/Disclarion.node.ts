@@ -196,13 +196,18 @@ export class Disclarion implements INodeType {
 						raw_metadata: rawMetadata,
 					};
 
+					// `={{$credentials...}}` expressions are only resolved when bound
+					// to a node parameter — httpRequestWithAuthentication takes a
+					// plain request object, so the base URL has to be read from the
+					// credential explicitly and built into a real string here.
+					const credentials = await this.getCredentials('disclarionApi');
 					isApiError = true;
 					const response = (await this.helpers.httpRequestWithAuthentication.call(
 						this,
 						'disclarionApi',
 						{
 							method: 'POST',
-							url: '={{$credentials.baseUrl}}/v1/logs' as unknown as string,
+							url: `${credentials.baseUrl}/v1/logs`,
 							body,
 							json: true,
 						},
