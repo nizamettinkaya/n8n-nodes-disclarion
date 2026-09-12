@@ -114,8 +114,8 @@ export class Disclarion implements INodeType {
 			// TODO (not yet done, tracked separately): the backend's POST /v1/logs
 			// accepts optional `jurisdiction` (default "EU") and `interaction_type`
 			// (default "chat") fields, which the Python SDK exposes as dc.track()
-			// keyword arguments as of disclarion 0.2.4 (see that repo's
-			// docs/decisions-log.md, "SDK 0.2.4" entry). This node has no way to
+			// keyword arguments as of disclarion 0.3.0 (see that repo's
+			// docs/decisions-log.md, "SDK 0.3.0" entry). This node has no way to
 			// send either today — every request built below silently defaults to
 			// EU/chat regardless of what the workflow author wants. Add them as
 			// fields in Additional Fields (or promote to top-level fields) when
