@@ -1,6 +1,6 @@
 {
     "name": "n8n-nodes-disclarion",
-    "version": "0.1.4",
+    "version": "0.2.0",
     "description": "n8n community node to log AI interactions with Disclarion for EU AI Act Article 50 disclosure compliance",
     "license": "MIT",
     "homepage": "https://disclarion.com",
@@ -15,15 +15,15 @@
         "type": "git",
         "url": "https://github.com/nizamettinkaya/n8n-nodes-disclarion.git"
     },
-   "scripts": {
-		"build": "n8n-node build",
-		"build:watch": "tsc --watch",
-		"dev": "n8n-node dev",
-		"lint": "n8n-node lint",
-		"lint:fix": "n8n-node lint --fix",
-		"release": "n8n-node release",
-		"prepublishOnly": "n8n-node prerelease"
-	},
+    "scripts": {
+        "build": "n8n-node build",
+        "build:watch": "tsc --watch",
+        "dev": "n8n-node dev",
+        "lint": "n8n-node lint",
+        "lint:fix": "n8n-node lint --fix",
+        "release": "n8n-node release",
+        "prepublishOnly": "n8n-node prerelease"
+    },
     "files": [
         "dist"
     ],
