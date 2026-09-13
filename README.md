@@ -41,9 +41,29 @@ Add the **Disclarion** node anywhere in your workflow after you've called an LLM
 
 * **Session ID** — a stable identifier for the end-user conversation (e.g. a chat session ID), used to group log entries and detect the first message in a session.
 * **Provider** and **Model Name** — which model produced the response.
-* Optionally, under **Additional Fields**: the provider's own response ID, and any extra JSON metadata you want stored alongside the log.
+* Optionally, under **Additional Fields**: the provider's own response ID, any extra JSON metadata you want stored alongside the log, and **Jurisdiction** / **Interaction Type** (see below).
 
 The node can also be used directly as a tool by n8n's AI Agent node, so an agent can log its own reply as it generates it.
+
+### Jurisdiction and Interaction Type
+
+Under **Additional Fields**, two optional fields feed Disclarion's backend Obligation Engine, which decides what disclosure/logging obligations apply:
+
+* **Jurisdiction** — free text (e.g. `EU`). Leave it out to use the backend default, `EU`.
+* **Interaction Type** — `Chat` or `Generated Content`. Leave it out to use the backend default, `Chat`.
+
+Leaving both out reproduces the exact request every workflow built before this existed already sends — nothing changes unless you explicitly add one of these fields.
+
+**Generated Content** is the one worth calling out for n8n specifically: it's for workflows that draft and publish AI-generated content, product descriptions, articles, social posts, rather than holding a live conversation with a user. Where `Chat` may return a `disclosure_modal` obligation (something to show a user mid-conversation), `Generated Content` returns `content_label` instead: a signal that the content leaving this workflow should be labeled as AI-generated wherever it's published, with no chat UI involved at all. A typical automated-content workflow:
+
+```
+Generate content (OpenAI node)
+  → Disclarion node
+      Interaction Type: Generated Content
+  → Publish content (e.g. a CMS or social API node)
+```
+
+The Disclarion node's output includes `interaction_type` and `applied_actions` from the stored log entry, so a later node in the workflow can branch on `applied_actions` (e.g. only add an "AI-generated" caption when it actually contains `content_label`) instead of assuming it always applies.
 
 ## Resources
 
@@ -53,4 +73,5 @@ The node can also be used directly as a tool by n8n's AI Agent node, so an agent
 
 ## Version history
 
+* **0.2.0** — Added optional **Jurisdiction** and **Interaction Type** fields (under Additional Fields), matching the `jurisdiction`/`interaction_type` parameters the Python SDK exposes as of `disclarion` 0.3.0. Backward compatible: leaving both out sends the exact same request as before.
 * **0.1.0** — Initial release: Track Interaction operation, API key credential with key verification.

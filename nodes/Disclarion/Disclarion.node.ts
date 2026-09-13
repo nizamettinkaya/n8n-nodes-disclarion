@@ -111,15 +111,15 @@ export class Disclarion implements INodeType {
 					show: { operation: ['track'] },
 				},
 			},
-			// TODO (not yet done, tracked separately): the backend's POST /v1/logs
-			// accepts optional `jurisdiction` (default "EU") and `interaction_type`
-			// (default "chat") fields, which the Python SDK exposes as dc.track()
-			// keyword arguments as of disclarion 0.3.0 (see that repo's
-			// docs/decisions-log.md, "SDK 0.3.0" entry). This node has no way to
-			// send either today — every request built below silently defaults to
-			// EU/chat regardless of what the workflow author wants. Add them as
-			// fields in Additional Fields (or promote to top-level fields) when
-			// this gets picked up.
+			// Jurisdiction/interaction_type feed the backend's Obligation Engine
+			// (see disclarion-app's docs/decisions-log.md, "SDK 0.3.0"/"0.3.1"
+			// entries) — the same fields the Python SDK exposes as dc.track()
+			// keyword arguments. Both live in Additional Fields, not as
+			// top-level required fields, specifically so an n8n collection's
+			// semantics do the backward-compat work for us: a field only ends
+			// up in the resulting object if the workflow author explicitly
+			// clicks "Add Field" for it, so any workflow built before this
+			// existed produces the exact same request body it always did.
 			{
 				displayName: 'Additional Fields',
 				name: 'additionalFields',
@@ -143,6 +143,27 @@ export class Disclarion implements INodeType {
 						type: 'json',
 						default: '{}',
 						description: 'Any extra non-content metadata to store alongside the log entry',
+					},
+					{
+						displayName: 'Jurisdiction',
+						name: 'jurisdiction',
+						type: 'string',
+						default: '',
+						placeholder: 'EU',
+						description:
+							'Feeds the backend\'s Obligation Engine, which decides which disclosure/logging obligations apply for this jurisdiction + interaction type pair. Free text (the backend has no fixed list, new jurisdictions are added there over time). Leave blank to use the backend default, "EU".',
+					},
+					{
+						displayName: 'Interaction Type',
+						name: 'interactionType',
+						type: 'options',
+						options: [
+							{ name: 'Chat', value: 'chat' },
+							{ name: 'Generated Content', value: 'generated_content' },
+						],
+						default: 'chat',
+						description:
+							'What kind of interaction this is. "Chat" is a live conversation (may carry a disclosure_modal obligation). "Generated Content" is AI-generated content published outside a conversation, e.g. a product description or article a workflow drafts and publishes (may carry a content_label obligation instead) — the natural fit for a workflow that generates and publishes content rather than chatting with a user. Leave this field out of Additional Fields entirely to use the backend default, "Chat".',
 					},
 				],
 			},
@@ -173,6 +194,8 @@ export class Disclarion implements INodeType {
 					const additionalFields = this.getNodeParameter('additionalFields', i) as {
 						responseId?: string;
 						rawMetadata?: string;
+						jurisdiction?: string;
+						interactionType?: string;
 					};
 
 					let rawMetadata: Record<string, unknown> = {};
@@ -190,6 +213,15 @@ export class Disclarion implements INodeType {
 						rawMetadata.id = additionalFields.responseId;
 					}
 
+					// Both fall back to the backend's own defaults when the
+					// workflow author never added the field (undefined) or added
+					// it but left Jurisdiction blank (empty string) — same
+					// "EU"/"chat" defaults dc.track() uses, so a workflow that
+					// predates these fields keeps sending exactly what it always
+					// sent.
+					const jurisdiction = additionalFields.jurisdiction || 'EU';
+					const interactionType = additionalFields.interactionType || 'chat';
+
 					const body = {
 						session_id: sessionId,
 						provider,
@@ -203,6 +235,8 @@ export class Disclarion implements INodeType {
 						disclosure_shown: true,
 						content_labeled: true,
 						raw_metadata: rawMetadata,
+						jurisdiction,
+						interaction_type: interactionType,
 					};
 
 					// `={{$credentials...}}` expressions are only resolved when bound
