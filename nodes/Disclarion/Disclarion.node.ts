@@ -131,27 +131,13 @@ export class Disclarion implements INodeType {
 				},
 				options: [
 					{
-						displayName: 'Response ID',
-						name: 'responseId',
+						displayName: 'Content Type',
+						name: 'contentType',
 						type: 'string',
 						default: '',
-						description: "The LLM provider's response/completion ID, if available",
-					},
-					{
-						displayName: 'Raw Metadata (JSON)',
-						name: 'rawMetadata',
-						type: 'json',
-						default: '{}',
-						description: 'Any extra non-content metadata to store alongside the log entry',
-					},
-					{
-						displayName: 'Jurisdiction',
-						name: 'jurisdiction',
-						type: 'string',
-						default: '',
-						placeholder: 'EU',
+						placeholder: 'image',
 						description:
-							'Feeds the backend\'s Obligation Engine, which decides which disclosure/logging obligations apply for this jurisdiction + interaction type pair. Free text (the backend has no fixed list, new jurisdictions are added there over time). Leave blank to use the backend default, "EU".',
+							'What kind of content this is — free text (e.g. "image", "video", "audio", "text"), no fixed list. Only meaningful when Interaction Type is "Generated Content"; purely descriptive today (doesn\'t change which obligations apply, only what\'s recorded for later reporting), matching the Python SDK\'s dc.track_content(content_type=...). Leave blank to send no content type, same as before this field existed.',
 					},
 					{
 						displayName: 'Interaction Type',
@@ -164,6 +150,29 @@ export class Disclarion implements INodeType {
 						default: 'chat',
 						description:
 							'What kind of interaction this is. "Chat" is a live conversation (may carry a disclosure_modal obligation). "Generated Content" is AI-generated content published outside a conversation, e.g. a product description or article a workflow drafts and publishes (may carry a content_label obligation instead) — the natural fit for a workflow that generates and publishes content rather than chatting with a user. Leave this field out of Additional Fields entirely to use the backend default, "Chat".',
+					},
+					{
+						displayName: 'Jurisdiction',
+						name: 'jurisdiction',
+						type: 'string',
+						default: '',
+						placeholder: 'EU',
+						description:
+							'Feeds the backend\'s Obligation Engine, which decides which disclosure/logging obligations apply for this jurisdiction + interaction type pair. Free text (the backend has no fixed list, new jurisdictions are added there over time). Leave blank to use the backend default, "EU".',
+					},
+					{
+						displayName: 'Raw Metadata (JSON)',
+						name: 'rawMetadata',
+						type: 'json',
+						default: '{}',
+						description: 'Any extra non-content metadata to store alongside the log entry',
+					},
+					{
+						displayName: 'Response ID',
+						name: 'responseId',
+						type: 'string',
+						default: '',
+						description: "The LLM provider's response/completion ID, if available",
 					},
 				],
 			},
@@ -196,6 +205,7 @@ export class Disclarion implements INodeType {
 						rawMetadata?: string;
 						jurisdiction?: string;
 						interactionType?: string;
+						contentType?: string;
 					};
 
 					let rawMetadata: Record<string, unknown> = {};
@@ -237,6 +247,12 @@ export class Disclarion implements INodeType {
 						raw_metadata: rawMetadata,
 						jurisdiction,
 						interaction_type: interactionType,
+						// Unlike jurisdiction/interactionType, there's no backend
+						// default to fall back to here — the backend's own default
+						// is None (LogPayload.content_type: Optional[str] = None),
+						// so an empty field is left out of the body entirely rather
+						// than sent as an empty string.
+						...(additionalFields.contentType ? { content_type: additionalFields.contentType } : {}),
 					};
 
 					// `={{$credentials...}}` expressions are only resolved when bound
