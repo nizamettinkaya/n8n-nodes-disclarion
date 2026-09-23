@@ -77,6 +77,7 @@ Also under **Additional Fields**: **Content Type** is free text describing the k
 
 ## Version history
 
+* **0.3.1** — Updated node icon to the official Disclarion logo.
 * **0.3.0** — Added an optional **Content Type** field (under Additional Fields), matching the `content_type` parameter the Python SDK exposes as of `disclarion` 0.3.2 (`dc.track_content()`). Backward compatible: leaving it out sends the exact same request as before.
 * **0.2.0** — Added optional **Jurisdiction** and **Interaction Type** fields (under Additional Fields), matching the `jurisdiction`/`interaction_type` parameters the Python SDK exposes as of `disclarion` 0.3.0. Backward compatible: leaving both out sends the exact same request as before.
 * **0.1.0** — Initial release: Track Interaction operation, API key credential with key verification.
