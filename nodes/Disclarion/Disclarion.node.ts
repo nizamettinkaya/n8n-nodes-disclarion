@@ -1,3 +1,5 @@
+import { randomUUID } from 'crypto';
+
 import {
 	IExecuteFunctions,
 	INodeExecutionData,
@@ -8,6 +10,11 @@ import {
 	NodeConnectionTypes,
 	NodeOperationError,
 } from 'n8n-workflow';
+
+// resolveJsonModule (tsconfig.json) + package.json already in its
+// `include` list — this is already the intended way to read the
+// installed node's own version at runtime, not a new pattern.
+import { version as PACKAGE_VERSION } from '../../package.json';
 
 // Programmatic-style, not declarative: the request body needs non-trivial
 // assembly (parsing the user's raw-metadata JSON, folding an optional
@@ -253,6 +260,18 @@ export class Disclarion implements INodeType {
 						// so an empty field is left out of the body entirely rather
 						// than sent as an empty string.
 						...(additionalFields.contentType ? { content_type: additionalFields.contentType } : {}),
+						// Provenance fields (0.4.0) — set by this node itself, not
+						// exposed as a user-facing parameter, same reasoning as the
+						// Python SDK's identical fields (disclarion-app's
+						// packages/sdk-python/disclarion/client.py). client_event_id
+						// is a fresh uuid per execution of this node on this item,
+						// giving the backend an idempotency key for a case this node
+						// has no retry logic for today, but the backend's
+						// (project_id, client_event_id) unique index covers it either
+						// way, for free.
+						source: 'n8n-node',
+						source_version: PACKAGE_VERSION,
+						client_event_id: randomUUID(),
 					};
 
 					// `={{$credentials...}}` expressions are only resolved when bound
