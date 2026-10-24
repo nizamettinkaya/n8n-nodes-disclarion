@@ -18,6 +18,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Duplicate-style names ("page 2.tsx", "components 2") are iCloud/Finder
+      # conflict copies and must never be tracked; see CLAUDE.md. Tests run
+      # first so a broken checker can't pass vacuously.
+      - name: Duplicate-name guard (tests + check)
+        run: |
+          sh scripts/test-check-duplicate-names.sh
+          sh .claude/hooks/test-block-duplicate-names.sh
+          sh scripts/check-duplicate-names.sh
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
