@@ -1,0 +1,6 @@
+#!/bin/sh
+# Blocks commits that add or rename files/folders to duplicate-style names
+# ("page 2.tsx", "components 2"). Same check CI runs on every tracked path.
+# Activated per clone by scripts/setup-git-hooks.sh (core.hooksPath=.githooks).
+# Never bypass with --no-verify: if it fires, remove the copy instead.
+exec sh "$(git rev-parse --show-toplevel)/scripts/check-duplicate-names.sh" --staged
