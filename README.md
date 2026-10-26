@@ -4,6 +4,17 @@ This is an n8n community node. It lets you use [Disclarion](https://disclarion.c
 
 Disclarion logs AI-generated interactions and gives you back disclosure metadata so you can meet [EU AI Act Article 50](https://artificialintelligenceact.eu/article/50/) transparency obligations — labeling AI-generated content and disclosing that a user is talking to an AI system.
 
+> **Labeling AI content on a website? Start with label.js, not this node.**
+> One script tag (`https://cdn.disclarion.com/v1/label.js`) plus a
+> `data-disclarion` attribute on your AI text and images draws the standard
+> "AI-generated" label and keeps a verifiable record of each item, with no
+> API key and no workflow. It is in early access: sites are activated on
+> request. Setup guide: https://www.disclarion.com/docs#label-js
+>
+> Use this node to log AI interactions and generated content from your n8n
+> workflows, especially content published somewhere label.js can't run
+> (social posts, emails, a CMS you can't add a script to).
+
 [n8n](https://n8n.io/) is a [fair-code licensed](https://docs.n8n.io/sustainable-use-license/) workflow automation platform.
 
 [Installation](#installation)
@@ -63,7 +74,7 @@ Generate content (OpenAI node)
   → Publish content (e.g. a CMS or social API node)
 ```
 
-The Disclarion node's output includes `interaction_type` and `applied_actions` from the stored log entry, so a later node in the workflow can branch on `applied_actions` (e.g. only add an "AI-generated" caption when it actually contains `content_label`) instead of assuming it always applies.
+The Disclarion node's output includes `interaction_type` and `applied_actions` from the stored log entry, so a later node in the workflow can branch on `applied_actions` (e.g. only add an "AI-generated" caption when it actually contains `content_label`) instead of assuming it always applies. If the workflow publishes to a website that loads label.js, the publishing step can instead wrap the AI content in an element with `data-disclarion="ai-generated"` and label.js draws the standard label there ([setup guide](https://www.disclarion.com/docs#label-js)).
 
 ### Content Type
 
@@ -72,7 +83,7 @@ Also under **Additional Fields**: **Content Type** is free text describing the k
 ## Resources
 
 * [n8n community nodes documentation](https://docs.n8n.io/integrations/#community-nodes)
-* [Disclarion documentation](https://disclarion.com/docs)
+* [Disclarion documentation](https://www.disclarion.com/docs) (label.js first, then the Python SDK and this node)
 * [Disclarion Python SDK](https://pypi.org/project/disclarion/) (for logging directly from application code instead of a workflow)
 
 ## Version history
